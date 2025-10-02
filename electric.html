@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Field Lines - Physics Experiments</title>
+    <!-- MathJax for beautiful equation rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #4CAF50;
+        }
+
+        .nav-links a.active {
+            color: #4CAF50;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .simulation-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #electricCanvas {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="number"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn.primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .educational-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .concept-box {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .variable-name {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .real-life-apps {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .real-life-apps h4 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .real-life-apps ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .real-life-apps li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .real-life-apps li:before {
+            content: "•";
+            color: #2196F3;
+            position: absolute;
+            left: 0;
+        }
+
+        .data-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-label {
+            color: #ccc;
+        }
+
+        .data-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .equation-display {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .main-equation {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        .equation-explanation {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .equation-explanation p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .equation-explanation .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .equation-explanation .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">🔬 ED Academia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#experiments">Experiments</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Electric Field Lines Experiment</h1>
+            <p>Explore the invisible world of electric fields and discover how charges create beautiful field line patterns!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="simulation-panel">
+                <h3>Interactive Simulation</h3>
+                <div class="canvas-container">
+                    <canvas id="electricCanvas" width="500" height="300"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="charge1Slider">Charge 1 (μC):</label>
+                        <input type="range" id="charge1Slider" min="-10" max="10" step="1" value="5">
+                        <input type="number" id="charge1Value" value="5" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="charge2Slider">Charge 2 (μC):</label>
+                        <input type="range" id="charge2Slider" min="-10" max="10" step="1" value="-5">
+                        <input type="number" id="charge2Value" value="-5" step="1">
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="btn primary" onclick="updateField()">Update Field</button>
+                    <button class="btn secondary" onclick="clearField()">Clear</button>
+                    <button class="btn" onclick="resetField()">Reset</button>
+                </div>
+
+                <div class="data-display">
+                    <h4>Field Properties</h4>
+                    <div class="data-item">
+                        <span class="data-label">Charge 1:</span>
+                        <span class="data-value" id="charge1Display">+5.00 μC</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Charge 2:</span>
+                        <span class="data-value" id="charge2Display">-5.00 μC</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Field Strength:</span>
+                        <span class="data-value" id="fieldDisplay">0.00 N/C</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Potential:</span>
+                        <span class="data-value" id="potentialDisplay">0.00 V</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="educational-panel">
+                <div class="section">
+                    <h3>📚 What are Electric Fields?</h3>
+                    <div class="concept-box">
+                        <p>An electric field is a region around a charged particle where other charged particles experience a force. Electric field lines show the direction and strength of the electric field at each point in space.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔬 Key Variables</h3>
+                    <ul class="variable-list">
+                        <li>
+                            <span class="variable-name">Charge (q):</span> The amount of electric charge, measured in Coulombs (C). Can be positive or negative.
+                        </li>
+                        <li>
+                            <span class="variable-name">Electric Field (E):</span> The force per unit charge at a point in space, measured in N/C.
+                        </li>
+                        <li>
+                            <span class="variable-name">Electric Potential (V):</span> The electric potential energy per unit charge, measured in Volts (V).
+                        </li>
+                        <li>
+                            <span class="variable-name">Distance (r):</span> The distance from a charge affects the field strength.
+                        </li>
+                        <li>
+                            <span class="variable-name">Coulomb's Constant (k):</span> A fundamental constant in electrostatics.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>⚡ The Physics Formulas</h3>
+                    <div class="concept-box">
+                        <div class="equation-display">
+                            <div class="main-equation">
+                                $$E = \frac{kq}{r^2}$$
+                            </div>
+                            <div class="equation-explanation">
+                                <p><strong>Electric Field of a Point Charge:</strong></p>
+                                <ul class="variable-list">
+                                    <li><strong>$E$</strong> = Electric field strength (N/C)</li>
+                                    <li><strong>$k$</strong> = Coulomb's constant (8.99 × 10⁹ N⋅m²/C²)</li>
+                                    <li><strong>$q$</strong> = Charge (C)</li>
+                                    <li><strong>$r$</strong> = Distance from charge (m)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="equation-display">
+                            <div class="main-equation">
+                                $$V = \frac{kq}{r}$$
+                            </div>
+                            <div class="equation-explanation">
+                                <p><strong>Electric Potential of a Point Charge:</strong></p>
+                                <p>The electric potential decreases with distance from the charge.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔍 What You'll Observe</h3>
+                    <ul class="variable-list">
+                        <li><strong>Field lines point away from positive charges:</strong> Positive charges are sources of electric field</li>
+                        <li><strong>Field lines point toward negative charges:</strong> Negative charges are sinks of electric field</li>
+                        <li><strong>Field lines never cross:</strong> Each point has a unique field direction</li>
+                        <li><strong>Density shows strength:</strong> Closer lines mean stronger fields</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="real-life-apps">
+                        <h4>🌍 Real-Life Applications</h4>
+                        <ul>
+                            <li><strong>Electronics:</strong> Circuit design and component behavior</li>
+                            <li><strong>Medical Technology:</strong> ECG machines and defibrillators</li>
+                            <li><strong>Power Systems:</strong> Electrical grid and power transmission</li>
+                            <li><strong>Particle Physics:</strong> Particle accelerators and detectors</li>
+                            <li><strong>Capacitors:</strong> Energy storage devices</li>
+                            <li><strong>Lightning Protection:</strong> Understanding and preventing lightning strikes</li>
+                            <li><strong>Touchscreens:</strong> Capacitive touch technology</li>
+                            <li><strong>Electric Vehicles:</strong> Battery and motor design</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ElectricFieldSimulation {
+            constructor() {
+                this.canvas = document.getElementById('electricCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.charge1 = { x: 150, y: 150, q: 5 };
+                this.charge2 = { x: 350, y: 150, q: -5 };
+                this.fieldLines = [];
+                this.k = 8.99e9; // Coulomb's constant (scaled for display)
+                
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.drawField();
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            setupEventListeners() {
+                const charge1Slider = document.getElementById('charge1Slider');
+                const charge1Value = document.getElementById('charge1Value');
+                const charge2Slider = document.getElementById('charge2Slider');
+                const charge2Value = document.getElementById('charge2Value');
+
+                charge1Slider.addEventListener('input', (e) => {
+                    charge1Value.value = e.target.value;
+                    this.charge1.q = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+
+                charge1Value.addEventListener('input', (e) => {
+                    charge1Slider.value = e.target.value;
+                    this.charge1.q = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+
+                charge2Slider.addEventListener('input', (e) => {
+                    charge2Value.value = e.target.value;
+                    this.charge2.q = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+
+                charge2Value.addEventListener('input', (e) => {
+                    charge2Slider.value = e.target.value;
+                    this.charge2.q = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+            }
+
+            calculateField(x, y) {
+                const dx1 = x - this.charge1.x;
+                const dy1 = y - this.charge1.y;
+                const r1 = Math.sqrt(dx1*dx1 + dy1*dy1);
+                
+                const dx2 = x - this.charge2.x;
+                const dy2 = y - this.charge2.y;
+                const r2 = Math.sqrt(dx2*dx2 + dy2*dy2);
+                
+                if (r1 < 20 || r2 < 20) return { ex: 0, ey: 0 };
+                
+                const E1x = (this.k * this.charge1.q * dx1) / (r1 * r1 * r1);
+                const E1y = (this.k * this.charge1.q * dy1) / (r1 * r1 * r1);
+                
+                const E2x = (this.k * this.charge2.q * dx2) / (r2 * r2 * r2);
+                const E2y = (this.k * this.charge2.q * dy2) / (r2 * r2 * r2);
+                
+                return {
+                    ex: E1x + E2x,
+                    ey: E1y + E2y
+                };
+            }
+
+            generateFieldLines() {
+                this.fieldLines = [];
+                const numLines = 20;
+                
+                for (let i = 0; i < numLines; i++) {
+                    const angle = (2 * Math.PI * i) / numLines;
+                    const startRadius = 25;
+                    const startX = this.charge1.x + startRadius * Math.cos(angle);
+                    const startY = this.charge1.y + startRadius * Math.sin(angle);
+                    
+                    const line = this.traceFieldLine(startX, startY);
+                    if (line.length > 10) {
+                        this.fieldLines.push(line);
+                    }
+                }
+            }
+
+            traceFieldLine(startX, startY) {
+                const line = [];
+                let x = startX;
+                let y = startY;
+                const stepSize = 2;
+                const maxSteps = 200;
+                
+                for (let step = 0; step < maxSteps; step++) {
+                    if (x < 0 || x > this.canvas.width || y < 0 || y > this.canvas.height) break;
+                    
+                    line.push({ x, y });
+                    
+                    const field = this.calculateField(x, y);
+                    const magnitude = Math.sqrt(field.ex * field.ex + field.ey * field.ey);
+                    
+                    if (magnitude < 0.001) break;
+                    
+                    x += (field.ex / magnitude) * stepSize;
+                    y += (field.ey / magnitude) * stepSize;
+                }
+                
+                return line;
+            }
+
+            drawField() {
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                this.ctx.clearRect(0, 0, width, height);
+                
+                // Draw field lines
+                this.generateFieldLines();
+                this.ctx.strokeStyle = 'rgba(76, 175, 80, 0.6)';
+                this.ctx.lineWidth = 1;
+                
+                this.fieldLines.forEach(line => {
+                    this.ctx.beginPath();
+                    line.forEach((point, index) => {
+                        if (index === 0) {
+                            this.ctx.moveTo(point.x, point.y);
+                        } else {
+                            this.ctx.lineTo(point.x, point.y);
+                        }
+                    });
+                    this.ctx.stroke();
+                });
+                
+                // Draw charge 1
+                this.ctx.fillStyle = this.charge1.q > 0 ? '#f44336' : '#2196F3';
+                this.ctx.beginPath();
+                this.ctx.arc(this.charge1.x, this.charge1.y, 20, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Add charge symbol
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(this.charge1.q > 0 ? '+' : '-', this.charge1.x, this.charge1.y + 5);
+                
+                // Draw charge 2
+                this.ctx.fillStyle = this.charge2.q > 0 ? '#f44336' : '#2196F3';
+                this.ctx.beginPath();
+                this.ctx.arc(this.charge2.x, this.charge2.y, 20, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Add charge symbol
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillText(this.charge2.q > 0 ? '+' : '-', this.charge2.x, this.charge2.y + 5);
+                
+                // Draw field strength at center
+                const centerX = width / 2;
+                const centerY = height / 2;
+                const field = this.calculateField(centerX, centerY);
+                const magnitude = Math.sqrt(field.ex * field.ex + field.ey * field.ey);
+                
+                if (magnitude > 0.001) {
+                    this.ctx.strokeStyle = '#FFC107';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(centerX, centerY);
+                    this.ctx.lineTo(centerX + field.ex * 10, centerY + field.ey * 10);
+                    this.ctx.stroke();
+                }
+            }
+
+            updateDisplay() {
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+                const field = this.calculateField(centerX, centerY);
+                const magnitude = Math.sqrt(field.ex * field.ex + field.ey * field.ey);
+                
+                // Calculate potential at center
+                const r1 = Math.sqrt((centerX - this.charge1.x)**2 + (centerY - this.charge1.y)**2);
+                const r2 = Math.sqrt((centerX - this.charge2.x)**2 + (centerY - this.charge2.y)**2);
+                const potential = (this.k * this.charge1.q / r1) + (this.k * this.charge2.q / r2);
+                
+                document.getElementById('charge1Display').textContent = 
+                    (this.charge1.q > 0 ? '+' : '') + this.charge1.q.toFixed(2) + ' μC';
+                document.getElementById('charge2Display').textContent = 
+                    (this.charge2.q > 0 ? '+' : '') + this.charge2.q.toFixed(2) + ' μC';
+                document.getElementById('fieldDisplay').textContent = magnitude.toFixed(2) + ' N/C';
+                document.getElementById('potentialDisplay').textContent = potential.toFixed(2) + ' V';
+            }
+        }
+
+        // Initialize simulation
+        const electric = new ElectricFieldSimulation();
+
+        // Global functions for buttons
+        function updateField() {
+            electric.drawField();
+            electric.updateDisplay();
+        }
+
+        function clearField() {
+            electric.fieldLines = [];
+            electric.drawField();
+        }
+
+        function resetField() {
+            electric.charge1.q = 5;
+            electric.charge2.q = -5;
+            document.getElementById('charge1Slider').value = 5;
+            document.getElementById('charge1Value').value = 5;
+            document.getElementById('charge2Slider').value = -5;
+            document.getElementById('charge2Value').value = -5;
+            electric.drawField();
+            electric.updateDisplay();
+        }
+    </script>
+</body>
+</html>

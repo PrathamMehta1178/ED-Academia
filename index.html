@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Experiments - ED Academia</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #fff;
+            background: #000;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Luxury entrance animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4CAF50, #66BB6A);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #4CAF50;
+            transform: translateY(-2px);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a.active {
+            color: #4CAF50;
+        }
+
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1.2s ease-out 0.3s both;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+            animation: fadeInUp 1.4s ease-out 0.6s both;
+            position: relative;
+            z-index: 1;
+        }
+
+        .experiments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+            animation: fadeInUp 1.6s ease-out 0.9s both;
+        }
+
+        .experiment-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        .experiment-card:hover {
+            transform: translateY(-8px);
+            border: 2px solid #4CAF50;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+        }
+
+
+        .experiment-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            border: 2px dashed rgba(255,255,255,0.3);
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        .experiment-card:hover .experiment-image {
+            border-color: #4CAF50;
+            border-style: solid;
+        }
+
+        .experiment-title {
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .experiment-description {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .difficulty {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .difficulty.easy {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .difficulty.medium {
+            background-color: rgba(255, 193, 7, 0.2);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+
+        .difficulty.hard {
+            background-color: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .experiment-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .topic-tag {
+            background-color: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .coming-soon {
+            text-align: center;
+            margin-top: 50px;
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+
+        .stats-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInScale 1.8s ease-out 1.2s both;
+            position: relative;
+            overflow: hidden;
+        }
+
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-item {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-item:hover {
+            border: 2px solid #4CAF50;
+            transform: translateY(-3px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .experiments-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">🔬 ED Academia</a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="#experiments">Experiments</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header>
+            <h1>🔬 Physics Experiments</h1>
+            <p class="subtitle">Interactive Virtual Physics Lab for Young Scientists</p>
+        </header>
+
+        <div class="stats-section">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #4CAF50;">📊 Learning Statistics</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Interactive Experiments</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Physics Concepts</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Free Access</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">Real-time</div>
+                    <div class="stat-label">Physics Simulation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiments-grid">
+            <!-- Experiment 1: Pendulum Motion -->
+            <div class="experiment-card" onclick="window.location.href='pendulum.html'">
+                <div class="experiment-image">
+                    🔬 Pendulum Simulation
+                </div>
+                <div class="experiment-title">Pendulum Motion</div>
+                <div class="difficulty easy">Easy</div>
+                <div class="experiment-description">
+                    Interactive pendulum with real-time physics. Adjust length and angle to explore oscillation principles.
+                </div>
+                <div class="experiment-topics">
+                    <span class="topic-tag">Oscillation</span>
+                    <span class="topic-tag">Period</span>
+                    <span class="topic-tag">Gravity</span>
+                </div>
+            </div>
+
+            <!-- Experiment 2: Projectile Motion -->
+            <div class="experiment-card" onclick="window.location.href='projectile.html'">
+                <div class="experiment-image">
+                    🚀 Projectile Simulation
+                </div>
+                <div class="experiment-title">Projectile Motion</div>
+                <div class="difficulty medium">Medium</div>
+                <div class="experiment-description">
+                    Launch objects at different angles and speeds. Explore trajectory physics and range calculations.
+                </div>
+                <div class="experiment-topics">
+                    <span class="topic-tag">Trajectory</span>
+                    <span class="topic-tag">Velocity</span>
+                    <span class="topic-tag">Angle</span>
+                </div>
+            </div>
+
+            <!-- Experiment 3: Simple Harmonic Motion -->
+            <div class="experiment-card" onclick="window.location.href='spring.html'">
+                <div class="experiment-image">
+                    🌊 Spring Simulation
+                </div>
+                <div class="experiment-title">Spring Oscillator</div>
+                <div class="difficulty medium">Medium</div>
+                <div class="experiment-description">
+                    Attach masses to springs and observe harmonic motion. Learn frequency and amplitude relationships.
+                </div>
+                <div class="experiment-topics">
+                    <span class="topic-tag">Springs</span>
+                    <span class="topic-tag">Frequency</span>
+                    <span class="topic-tag">Amplitude</span>
+                </div>
+            </div>
+
+            <!-- Experiment 4: Collision Physics -->
+            <div class="experiment-card" onclick="window.location.href='collision.html'">
+                <div class="experiment-image">
+                    ⚡ Collision Simulation
+                </div>
+                <div class="experiment-title">Elastic Collisions</div>
+                <div class="difficulty medium">Medium</div>
+                <div class="experiment-description">
+                    Watch balls collide and bounce. Experiment with momentum conservation and energy transfer.
+                </div>
+                <div class="experiment-topics">
+                    <span class="topic-tag">Momentum</span>
+                    <span class="topic-tag">Energy</span>
+                    <span class="topic-tag">Conservation</span>
+                </div>
+            </div>
+
+            <!-- Experiment 5: Wave Interference -->
+            <div class="experiment-card" onclick="window.location.href='waves.html'">
+                <div class="experiment-image">
+                    🌊 Wave Simulation
+                </div>
+                <div class="experiment-title">Wave Interference</div>
+                <div class="difficulty hard">Hard</div>
+                <div class="experiment-description">
+                    Create ripples and observe wave interactions. See interference patterns form in real-time.
+                </div>
+                <div class="experiment-topics">
+                    <span class="topic-tag">Waves</span>
+                    <span class="topic-tag">Interference</span>
+                    <span class="topic-tag">Frequency</span>
+                </div>
+            </div>
+
+            <!-- Experiment 6: Electric Field Visualization -->
+            <div class="experiment-card" onclick="window.location.href='electric.html'">
+                <div class="experiment-image">
+                    ⚡ Field Simulation
+                </div>
+                <div class="experiment-title">Electric Field Lines</div>
+                <div class="difficulty hard">Hard</div>
+                <div class="experiment-description">
+                    Visualize invisible electric fields. Place charges and watch field lines form beautiful patterns.
+                </div>
+                <div class="experiment-topics">
+                    <span class="topic-tag">Electric Fields</span>
+                    <span class="topic-tag">Charges</span>
+                    <span class="topic-tag">Forces</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="coming-soon">
+            <p>🚀 More experiments coming soon! Click on any experiment to start learning!</p>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    

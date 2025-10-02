@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elastic Collisions - Physics Experiments</title>
+    <!-- MathJax for beautiful equation rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #4CAF50;
+        }
+
+        .nav-links a.active {
+            color: #4CAF50;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .simulation-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #collisionCanvas {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="number"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn.primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .educational-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .concept-box {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .variable-name {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .real-life-apps {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .real-life-apps h4 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .real-life-apps ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .real-life-apps li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .real-life-apps li:before {
+            content: "•";
+            color: #2196F3;
+            position: absolute;
+            left: 0;
+        }
+
+        .data-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-label {
+            color: #ccc;
+        }
+
+        .data-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .equation-display {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .main-equation {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        .equation-explanation {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .equation-explanation p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .equation-explanation .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .equation-explanation .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">🔬 ED Academia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#experiments">Experiments</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Elastic Collisions Experiment</h1>
+            <p>Explore the fascinating world of momentum conservation and energy transfer in elastic collisions!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="simulation-panel">
+                <h3>Interactive Simulation</h3>
+                <div class="canvas-container">
+                    <canvas id="collisionCanvas" width="500" height="300"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="mass1Slider">Ball 1 Mass (kg):</label>
+                        <input type="range" id="mass1Slider" min="0.1" max="2" step="0.1" value="1">
+                        <input type="number" id="mass1Value" value="1" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label for="mass2Slider">Ball 2 Mass (kg):</label>
+                        <input type="range" id="mass2Slider" min="0.1" max="2" step="0.1" value="0.5">
+                        <input type="number" id="mass2Value" value="0.5" step="0.1">
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="btn primary" onclick="startCollision()">Start</button>
+                    <button class="btn secondary" onclick="stopCollision()">Stop</button>
+                    <button class="btn" onclick="resetCollision()">Reset</button>
+                </div>
+
+                <div class="data-display">
+                    <h4>Collision Data</h4>
+                    <div class="data-item">
+                        <span class="data-label">Ball 1 Velocity:</span>
+                        <span class="data-value" id="v1Display">0.00 m/s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Ball 2 Velocity:</span>
+                        <span class="data-value" id="v2Display">0.00 m/s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Total Momentum:</span>
+                        <span class="data-value" id="momentumDisplay">0.00 kg⋅m/s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Total Kinetic Energy:</span>
+                        <span class="data-value" id="energyDisplay">0.00 J</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="educational-panel">
+                <div class="section">
+                    <h3>📚 What are Elastic Collisions?</h3>
+                    <div class="concept-box">
+                        <p>An elastic collision is a collision where both momentum and kinetic energy are conserved. The objects bounce off each other without any energy loss to heat, sound, or deformation.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔬 Key Variables</h3>
+                    <ul class="variable-list">
+                        <li>
+                            <span class="variable-name">Mass (m):</span> The mass of each object affects how much momentum it carries and how it responds to collisions.
+                        </li>
+                        <li>
+                            <span class="variable-name">Velocity (v):</span> The speed and direction of each object before and after collision.
+                        </li>
+                        <li>
+                            <span class="variable-name">Momentum (p):</span> The product of mass and velocity (p = mv). Momentum is always conserved in collisions.
+                        </li>
+                        <li>
+                            <span class="variable-name">Kinetic Energy (KE):</span> The energy of motion (KE = ½mv²). Conserved in elastic collisions.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>⚡ The Physics Formulas</h3>
+                    <div class="concept-box">
+                        <div class="equation-display">
+                            <div class="main-equation">
+                                $$m_1v_{1i} + m_2v_{2i} = m_1v_{1f} + m_2v_{2f}$$
+                            </div>
+                            <div class="equation-explanation">
+                                <p><strong>Momentum Conservation:</strong></p>
+                                <ul class="variable-list">
+                                    <li><strong>$m_1, m_2$</strong> = Masses of the two objects</li>
+                                    <li><strong>$v_{1i}, v_{2i}$</strong> = Initial velocities</li>
+                                    <li><strong>$v_{1f}, v_{2f}$</strong> = Final velocities</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="equation-display">
+                            <div class="main-equation">
+                                $$\frac{1}{2}m_1v_{1i}^2 + \frac{1}{2}m_2v_{2i}^2 = \frac{1}{2}m_1v_{1f}^2 + \frac{1}{2}m_2v_{2f}^2$$
+                            </div>
+                            <div class="equation-explanation">
+                                <p><strong>Kinetic Energy Conservation:</strong></p>
+                                <p>In elastic collisions, kinetic energy is also conserved, meaning no energy is lost to heat or sound.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔍 What You'll Observe</h3>
+                    <ul class="variable-list">
+                        <li><strong>Equal masses:</strong> When masses are equal, velocities are simply exchanged</li>
+                        <li><strong>Heavy vs Light:</strong> A heavy object hitting a light one will continue moving, but slower</li>
+                        <li><strong>Light vs Heavy:</strong> A light object hitting a heavy one will bounce back with nearly the same speed</li>
+                        <li><strong>Momentum conservation:</strong> Total momentum before = Total momentum after</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="real-life-apps">
+                        <h4>🌍 Real-Life Applications</h4>
+                        <ul>
+                            <li><strong>Sports:</strong> Billiards, pool, and snooker rely on elastic collision physics</li>
+                            <li><strong>Particle Physics:</strong> High-energy particle collisions in accelerators</li>
+                            <li><strong>Space Exploration:</strong> Gravity assist maneuvers using planetary collisions</li>
+                            <li><strong>Engineering:</strong> Shock absorbers and impact testing</li>
+                            <li><strong>Gaming:</strong> Physics engines in video games for realistic ball physics</li>
+                            <li><strong>Medical:</strong> Ultrasound imaging uses wave collisions</li>
+                            <li><strong>Transportation:</strong> Crash testing and safety design</li>
+                            <li><strong>Entertainment:</strong> Pinball machines and arcade games</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CollisionSimulation {
+            constructor() {
+                this.canvas = document.getElementById('collisionCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.animationId = null;
+                this.isRunning = false;
+                this.time = 0;
+                
+                // Ball properties
+                this.ball1 = {
+                    x: 100,
+                    y: 150,
+                    vx: 0,
+                    vy: 0,
+                    mass: 1,
+                    radius: 20,
+                    color: '#4CAF50'
+                };
+                
+                this.ball2 = {
+                    x: 400,
+                    y: 150,
+                    vx: 0,
+                    vy: 0,
+                    mass: 0.5,
+                    radius: 15,
+                    color: '#2196F3'
+                };
+                
+                this.initialSetup = true;
+                
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.drawBalls();
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            setupEventListeners() {
+                const mass1Slider = document.getElementById('mass1Slider');
+                const mass1Value = document.getElementById('mass1Value');
+                const mass2Slider = document.getElementById('mass2Slider');
+                const mass2Value = document.getElementById('mass2Value');
+
+                mass1Slider.addEventListener('input', (e) => {
+                    mass1Value.value = e.target.value;
+                    this.ball1.mass = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+
+                mass1Value.addEventListener('input', (e) => {
+                    mass1Slider.value = e.target.value;
+                    this.ball1.mass = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+
+                mass2Slider.addEventListener('input', (e) => {
+                    mass2Value.value = e.target.value;
+                    this.ball2.mass = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+
+                mass2Value.addEventListener('input', (e) => {
+                    mass2Slider.value = e.target.value;
+                    this.ball2.mass = parseFloat(e.target.value);
+                    this.updateDisplay();
+                });
+            }
+
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.time = 0;
+                
+                // Set initial velocities
+                this.ball1.vx = 2; // Moving right
+                this.ball2.vx = -1; // Moving left
+                this.ball1.vy = 0;
+                this.ball2.vy = 0;
+                
+                this.animate();
+            }
+
+            stop() {
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+
+            reset() {
+                this.stop();
+                this.time = 0;
+                this.ball1.x = 100;
+                this.ball1.y = 150;
+                this.ball1.vx = 0;
+                this.ball1.vy = 0;
+                this.ball2.x = 400;
+                this.ball2.y = 150;
+                this.ball2.vx = 0;
+                this.ball2.vy = 0;
+                this.drawBalls();
+                this.updateDisplay();
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+
+                const dt = 0.016; // ~60fps
+                this.time += dt;
+                
+                // Update positions
+                this.ball1.x += this.ball1.vx;
+                this.ball2.x += this.ball2.vx;
+                
+                // Check for collision
+                const distance = Math.abs(this.ball1.x - this.ball2.x);
+                const minDistance = this.ball1.radius + this.ball2.radius;
+                
+                if (distance <= minDistance && this.time > 0.1) {
+                    this.handleCollision();
+                }
+                
+                // Check boundaries
+                if (this.ball1.x - this.ball1.radius <= 0 || this.ball1.x + this.ball1.radius >= this.canvas.width) {
+                    this.ball1.vx *= -1;
+                }
+                if (this.ball2.x - this.ball2.radius <= 0 || this.ball2.x + this.ball2.radius >= this.canvas.width) {
+                    this.ball2.vx *= -1;
+                }
+                
+                this.drawBalls();
+                this.updateDisplay();
+
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            handleCollision() {
+                // Elastic collision formulas
+                const m1 = this.ball1.mass;
+                const m2 = this.ball2.mass;
+                const v1i = this.ball1.vx;
+                const v2i = this.ball2.vx;
+                
+                // Calculate final velocities
+                const v1f = ((m1 - m2) * v1i + 2 * m2 * v2i) / (m1 + m2);
+                const v2f = ((m2 - m1) * v2i + 2 * m1 * v1i) / (m1 + m2);
+                
+                this.ball1.vx = v1f;
+                this.ball2.vx = v2f;
+                
+                // Separate balls to prevent overlap
+                const overlap = (this.ball1.radius + this.ball2.radius) - Math.abs(this.ball1.x - this.ball2.x);
+                if (this.ball1.x < this.ball2.x) {
+                    this.ball1.x -= overlap / 2;
+                    this.ball2.x += overlap / 2;
+                } else {
+                    this.ball1.x += overlap / 2;
+                    this.ball2.x -= overlap / 2;
+                }
+            }
+
+            drawBalls() {
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                this.ctx.clearRect(0, 0, width, height);
+                
+                // Draw ball 1
+                this.ctx.fillStyle = this.ball1.color;
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball1.x, this.ball1.y, this.ball1.radius, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Add highlight to ball 1
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball1.x - 5, this.ball1.y - 5, this.ball1.radius / 3, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Draw ball 2
+                this.ctx.fillStyle = this.ball2.color;
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball2.x, this.ball2.y, this.ball2.radius, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Add highlight to ball 2
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.beginPath();
+                this.ctx.arc(this.ball2.x - 3, this.ball2.y - 3, this.ball2.radius / 3, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Draw velocity vectors
+                if (this.isRunning) {
+                    this.drawVelocityVector(this.ball1, '#4CAF50');
+                    this.drawVelocityVector(this.ball2, '#2196F3');
+                }
+                
+                // Draw mass labels
+                this.ctx.fillStyle = 'white';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(`${this.ball1.mass}kg`, this.ball1.x, this.ball1.y + 30);
+                this.ctx.fillText(`${this.ball2.mass}kg`, this.ball2.x, this.ball2.y + 30);
+            }
+
+            drawVelocityVector(ball, color) {
+                if (Math.abs(ball.vx) > 0.1) {
+                    this.ctx.strokeStyle = color;
+                    this.ctx.lineWidth = 3;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(ball.x, ball.y);
+                    this.ctx.lineTo(ball.x + ball.vx * 10, ball.y);
+                    this.ctx.stroke();
+                    
+                    // Arrow head
+                    const arrowSize = 8;
+                    this.ctx.beginPath();
+                    if (ball.vx > 0) {
+                        this.ctx.moveTo(ball.x + ball.vx * 10 - arrowSize, ball.y - arrowSize/2);
+                        this.ctx.lineTo(ball.x + ball.vx * 10, ball.y);
+                        this.ctx.lineTo(ball.x + ball.vx * 10 - arrowSize, ball.y + arrowSize/2);
+                    } else {
+                        this.ctx.moveTo(ball.x + ball.vx * 10 + arrowSize, ball.y - arrowSize/2);
+                        this.ctx.lineTo(ball.x + ball.vx * 10, ball.y);
+                        this.ctx.lineTo(ball.x + ball.vx * 10 + arrowSize, ball.y + arrowSize/2);
+                    }
+                    this.ctx.stroke();
+                }
+            }
+
+            updateDisplay() {
+                const momentum1 = this.ball1.mass * this.ball1.vx;
+                const momentum2 = this.ball2.mass * this.ball2.vx;
+                const totalMomentum = momentum1 + momentum2;
+                
+                const ke1 = 0.5 * this.ball1.mass * this.ball1.vx * this.ball1.vx;
+                const ke2 = 0.5 * this.ball2.mass * this.ball2.vx * this.ball2.vx;
+                const totalKE = ke1 + ke2;
+                
+                document.getElementById('v1Display').textContent = this.ball1.vx.toFixed(2) + ' m/s';
+                document.getElementById('v2Display').textContent = this.ball2.vx.toFixed(2) + ' m/s';
+                document.getElementById('momentumDisplay').textContent = totalMomentum.toFixed(2) + ' kg⋅m/s';
+                document.getElementById('energyDisplay').textContent = totalKE.toFixed(2) + ' J';
+            }
+        }
+
+        // Initialize simulation
+        const collision = new CollisionSimulation();
+
+        // Global functions for buttons
+        function startCollision() {
+            collision.start();
+        }
+
+        function stopCollision() {
+            collision.stop();
+        }
+
+        function resetCollision() {
+            collision.reset();
+        }
+    </script>
+</body>
+</html>

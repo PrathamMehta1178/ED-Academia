@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectile Motion - Physics Experiments</title>
+    <!-- MathJax for beautiful equation rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #fff;
+            background: #000;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Luxury entrance animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4CAF50, #66BB6A);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #4CAF50;
+            transform: translateY(-2px);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-links a.active {
+            color: #4CAF50;
+        }
+
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInUp 1.2s ease-out 0.3s both;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .simulation-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #projectileCanvas {
+            width: 100%;
+            height: 400px;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="number"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn.primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .educational-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .concept-box {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .variable-name {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .real-life-apps {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .real-life-apps h4 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .real-life-apps ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .real-life-apps li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .real-life-apps li:before {
+            content: "•";
+            color: #2196F3;
+            position: absolute;
+            left: 0;
+        }
+
+        .data-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-label {
+            color: #ccc;
+        }
+
+        .data-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .equation-display {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .main-equation {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        .equation-explanation {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .equation-explanation p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .equation-explanation .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .equation-explanation .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">🔬 ED Academia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#experiments">Experiments</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Projectile Motion Experiment</h1>
+            <p>Explore the fascinating world of projectile motion and discover how angle and velocity affect trajectory!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="simulation-panel">
+                <h3>Interactive Simulation</h3>
+                <div class="canvas-container">
+                    <canvas id="projectileCanvas" width="500" height="400"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="velocitySlider">Initial Velocity (m/s):</label>
+                        <input type="range" id="velocitySlider" min="5" max="50" step="1" value="20">
+                        <input type="number" id="velocityValue" value="20" step="1">
+                    </div>
+                    <div class="control-group">
+                        <label for="angleSlider">Launch Angle (degrees):</label>
+                        <input type="range" id="angleSlider" min="0" max="90" step="5" value="45">
+                        <input type="number" id="angleValue" value="45" step="5">
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="btn primary" onclick="launchProjectile()">Launch</button>
+                    <button class="btn secondary" onclick="stopProjectile()">Stop</button>
+                    <button class="btn" onclick="resetProjectile()">Reset</button>
+                </div>
+
+                <div class="data-display">
+                    <h4>Trajectory Data</h4>
+                    <div class="data-item">
+                        <span class="data-label">Range:</span>
+                        <span class="data-value" id="rangeDisplay">0.00m</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Max Height:</span>
+                        <span class="data-value" id="heightDisplay">0.00m</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Flight Time:</span>
+                        <span class="data-value" id="timeDisplay">0.00s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Velocity X:</span>
+                        <span class="data-value" id="vxDisplay">0.00 m/s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Velocity Y:</span>
+                        <span class="data-value" id="vyDisplay">0.00 m/s</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="educational-panel">
+                <div class="section">
+                    <h3>📚 What is Projectile Motion?</h3>
+                    <div class="concept-box">
+                        <p>Projectile motion is the motion of an object thrown or projected into the air, subject only to the acceleration of gravity. The object is called a projectile, and its path is called its trajectory.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔬 Key Variables</h3>
+                    <ul class="variable-list">
+                        <li>
+                            <span class="variable-name">Initial Velocity (v₀):</span> The speed and direction at which the projectile is launched.
+                        </li>
+                        <li>
+                            <span class="variable-name">Launch Angle (θ):</span> The angle at which the projectile is launched above the horizontal.
+                        </li>
+                        <li>
+                            <span class="variable-name">Range (R):</span> The horizontal distance the projectile travels.
+                        </li>
+                        <li>
+                            <span class="variable-name">Maximum Height (H):</span> The highest point reached by the projectile.
+                        </li>
+                        <li>
+                            <span class="variable-name">Flight Time (T):</span> The total time the projectile is in the air.
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>⚡ The Physics Formulas</h3>
+                    <div class="concept-box">
+                        <div class="equation-display">
+                            <div class="main-equation">
+                                $$R = \frac{v_0^2 \sin(2\theta)}{g}$$
+                            </div>
+                            <div class="equation-explanation">
+                                <p><strong>Range Formula:</strong></p>
+                                <ul class="variable-list">
+                                    <li><strong>$R$</strong> = Range (horizontal distance)</li>
+                                    <li><strong>$v_0$</strong> = Initial velocity</li>
+                                    <li><strong>$\theta$</strong> = Launch angle</li>
+                                    <li><strong>$g$</strong> = Acceleration due to gravity (9.8 m/s²)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="equation-display">
+                            <div class="main-equation">
+                                $$H = \frac{v_0^2 \sin^2(\theta)}{2g}$$
+                            </div>
+                            <div class="equation-explanation">
+                                <p><strong>Maximum Height Formula:</strong></p>
+                                <ul class="variable-list">
+                                    <li><strong>$H$</strong> = Maximum height</li>
+                                    <li><strong>$v_0$</strong> = Initial velocity</li>
+                                    <li><strong>$\theta$</strong> = Launch angle</li>
+                                    <li><strong>$g$</strong> = Acceleration due to gravity (9.8 m/s²)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔍 What You'll Observe</h3>
+                    <ul class="variable-list">
+                        <li><strong>45° gives maximum range:</strong> For the same initial velocity, 45° provides the longest horizontal distance</li>
+                        <li><strong>Complementary angles:</strong> 30° and 60° give the same range (for same velocity)</li>
+                        <li><strong>Higher velocity = longer range:</strong> Doubling velocity quadruples the range</li>
+                        <li><strong>Parabolic trajectory:</strong> The path always forms a perfect parabola</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="real-life-apps">
+                        <h4>🌍 Real-Life Applications</h4>
+                        <ul>
+                            <li><strong>Sports:</strong> Throwing balls, shooting basketballs, golf shots</li>
+                            <li><strong>Military:</strong> Artillery shells, missile trajectories</li>
+                            <li><strong>Space:</strong> Rocket launches and satellite orbits</li>
+                            <li><strong>Engineering:</strong> Water fountains, fireworks displays</li>
+                            <li><strong>Safety:</strong> Designing safety zones for explosions</li>
+                            <li><strong>Entertainment:</strong> Theme park rides and water slides</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ProjectileSimulation {
+            constructor() {
+                this.canvas = document.getElementById('projectileCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.animationId = null;
+                this.isRunning = false;
+                this.time = 0;
+                this.gravity = 9.8;
+                this.scale = 2; // Pixels per meter
+                
+                // Projectile properties
+                this.x = 0;
+                this.y = 0;
+                this.vx = 0;
+                this.vy = 0;
+                this.initialX = 0;
+                this.initialY = 0;
+                this.initialVx = 0;
+                this.initialVy = 0;
+                this.maxHeight = 0;
+                this.range = 0;
+                this.flightTime = 0;
+                
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.drawProjectile();
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            setupEventListeners() {
+                const velocitySlider = document.getElementById('velocitySlider');
+                const velocityValue = document.getElementById('velocityValue');
+                const angleSlider = document.getElementById('angleSlider');
+                const angleValue = document.getElementById('angleValue');
+
+                velocitySlider.addEventListener('input', (e) => {
+                    velocityValue.value = e.target.value;
+                    this.updateProjectile();
+                });
+
+                velocityValue.addEventListener('input', (e) => {
+                    velocitySlider.value = e.target.value;
+                    this.updateProjectile();
+                });
+
+                angleSlider.addEventListener('input', (e) => {
+                    angleValue.value = e.target.value;
+                    this.updateProjectile();
+                });
+
+                angleValue.addEventListener('input', (e) => {
+                    angleSlider.value = e.target.value;
+                    this.updateProjectile();
+                });
+            }
+
+            getVelocity() {
+                return parseFloat(document.getElementById('velocitySlider').value);
+            }
+
+            getAngle() {
+                return parseFloat(document.getElementById('angleSlider').value) * Math.PI / 180;
+            }
+
+            calculateTrajectory() {
+                const v0 = this.getVelocity();
+                const angle = this.getAngle();
+                
+                this.initialVx = v0 * Math.cos(angle);
+                this.initialVy = v0 * Math.sin(angle);
+                
+                // Calculate theoretical values
+                this.flightTime = (2 * v0 * Math.sin(angle)) / this.gravity;
+                this.range = (v0 * v0 * Math.sin(2 * angle)) / this.gravity;
+                this.maxHeight = (v0 * v0 * Math.sin(angle) * Math.sin(angle)) / (2 * this.gravity);
+            }
+
+            updateProjectile() {
+                if (!this.isRunning) {
+                    this.calculateTrajectory();
+                    this.drawProjectile();
+                }
+            }
+
+            launch() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.time = 0;
+                this.x = 0;
+                this.y = 0;
+                this.initialX = 0;
+                this.initialY = 0;
+                
+                this.calculateTrajectory();
+                this.vx = this.initialVx;
+                this.vy = this.initialVy;
+                
+                this.animate();
+            }
+
+            stop() {
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+
+            reset() {
+                this.stop();
+                this.time = 0;
+                this.x = 0;
+                this.y = 0;
+                this.calculateTrajectory();
+                this.drawProjectile();
+                this.updateDisplay();
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+
+                const dt = 0.016; // ~60fps
+                this.time += dt;
+                
+                // Update position
+                this.x = this.initialVx * this.time;
+                this.y = this.initialVy * this.time - 0.5 * this.gravity * this.time * this.time;
+                
+                // Update velocity
+                this.vx = this.initialVx;
+                this.vy = this.initialVy - this.gravity * this.time;
+                
+                // Stop if projectile hits ground
+                if (this.y <= 0 && this.time > 0.1) {
+                    this.stop();
+                    return;
+                }
+                
+                this.drawProjectile();
+                this.updateDisplay();
+
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            drawProjectile() {
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                this.ctx.clearRect(0, 0, width, height);
+                
+                // Draw ground
+                this.ctx.strokeStyle = '#4CAF50';
+                this.ctx.lineWidth = 3;
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, height - 50);
+                this.ctx.lineTo(width, height - 50);
+                this.ctx.stroke();
+                
+                // Draw trajectory path
+                if (this.isRunning || this.time > 0) {
+                    this.ctx.strokeStyle = 'rgba(76, 175, 80, 0.5)';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    
+                    const steps = 100;
+                    for (let i = 0; i <= steps; i++) {
+                        const t = (i / steps) * this.flightTime;
+                        const x = this.initialVx * t;
+                        const y = this.initialVy * t - 0.5 * this.gravity * t * t;
+                        
+                        if (i === 0) {
+                            this.ctx.moveTo(x * this.scale + 50, height - 50 - y * this.scale);
+                        } else {
+                            this.ctx.lineTo(x * this.scale + 50, height - 50 - y * this.scale);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+                
+                // Draw projectile
+                const screenX = this.x * this.scale + 50;
+                const screenY = height - 50 - this.y * this.scale;
+                
+                // Draw projectile as a circle
+                this.ctx.fillStyle = '#4CAF50';
+                this.ctx.beginPath();
+                this.ctx.arc(screenX, screenY, 8, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Add highlight
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.beginPath();
+                this.ctx.arc(screenX - 2, screenY - 2, 3, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Draw velocity vector
+                if (this.isRunning) {
+                    this.ctx.strokeStyle = '#FFC107';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(screenX, screenY);
+                    this.ctx.lineTo(screenX + this.vx * 2, screenY - this.vy * 2);
+                    this.ctx.stroke();
+                }
+                
+                // Draw launch point
+                this.ctx.fillStyle = '#fff';
+                this.ctx.beginPath();
+                this.ctx.arc(50, height - 50, 4, 0, 2 * Math.PI);
+                this.ctx.fill();
+            }
+
+            updateDisplay() {
+                document.getElementById('rangeDisplay').textContent = this.range.toFixed(2) + 'm';
+                document.getElementById('heightDisplay').textContent = this.maxHeight.toFixed(2) + 'm';
+                document.getElementById('timeDisplay').textContent = this.time.toFixed(2) + 's';
+                document.getElementById('vxDisplay').textContent = this.vx.toFixed(2) + ' m/s';
+                document.getElementById('vyDisplay').textContent = this.vy.toFixed(2) + ' m/s';
+            }
+        }
+
+        // Initialize simulation
+        const projectile = new ProjectileSimulation();
+
+        // Global functions for buttons
+        function launchProjectile() {
+            projectile.launch();
+        }
+
+        function stopProjectile() {
+            projectile.stop();
+        }
+
+        function resetProjectile() {
+            projectile.reset();
+        }
+    </script>
+</body>
+</html>
+
+

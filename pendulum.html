@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendulum Motion - Physics Experiments</title>
+    <!-- MathJax for beautiful equation rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #000;
+            color: #fff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-links a:hover {
+            color: #4CAF50;
+        }
+
+        .nav-links a.active {
+            color: #4CAF50;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .simulation-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .canvas-container {
+            position: relative;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #pendulumCanvas {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            background: #000;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ccc;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+        }
+
+        .control-group input[type="number"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px;
+            border-radius: 5px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn.primary {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .educational-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .concept-box {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .variable-name {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .real-life-apps {
+            background: rgba(33, 150, 243, 0.1);
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .real-life-apps h4 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .real-life-apps ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .real-life-apps li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .real-life-apps li:before {
+            content: "•";
+            color: #2196F3;
+            position: absolute;
+            left: 0;
+        }
+
+        .data-display {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-label {
+            color: #ccc;
+        }
+
+        .data-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .equation-display {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid rgba(76, 175, 80, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .main-equation {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+
+        .equation-explanation {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .equation-explanation p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        .equation-explanation .variable-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .equation-explanation .variable-list li {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">🔬 ED Academia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="index.html#experiments">Experiments</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Pendulum Motion Experiment</h1>
+            <p>Explore the fascinating world of oscillatory motion and discover the relationship between pendulum length and period!</p>
+        </div>
+
+        <div class="main-content">
+            <div class="simulation-panel">
+                <h3>Interactive Simulation</h3>
+                <div class="canvas-container">
+                    <canvas id="pendulumCanvas" width="400" height="300"></canvas>
+                </div>
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="lengthSlider">Length (m):</label>
+                        <input type="range" id="lengthSlider" min="0.5" max="3" step="0.1" value="1.5">
+                        <input type="number" id="lengthValue" value="1.5" step="0.1">
+                    </div>
+                    <div class="control-group">
+                        <label for="angleSlider">Initial Angle (degrees):</label>
+                        <input type="range" id="angleSlider" min="5" max="60" step="5" value="30">
+                        <input type="number" id="angleValue" value="30" step="5">
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <button class="btn primary" onclick="startPendulum()">Start</button>
+                    <button class="btn secondary" onclick="stopPendulum()">Stop</button>
+                    <button class="btn" onclick="resetPendulum()">Reset</button>
+                </div>
+
+                <div class="data-display">
+                    <h4>Real-time Data</h4>
+                    <div class="data-item">
+                        <span class="data-label">Period (T):</span>
+                        <span class="data-value" id="periodDisplay">0.00s</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Frequency (f):</span>
+                        <span class="data-value" id="frequencyDisplay">0.00 Hz</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Amplitude:</span>
+                        <span class="data-value" id="amplitudeDisplay">0.00°</span>
+                    </div>
+                    <div class="data-item">
+                        <span class="data-label">Time:</span>
+                        <span class="data-value" id="timeDisplay">0.00s</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="educational-panel">
+                <div class="section">
+                    <h3>📚 What is a Pendulum?</h3>
+                    <div class="concept-box">
+                        <p>A pendulum is a weight suspended from a fixed point that swings back and forth under the influence of gravity. It's one of the most fundamental examples of periodic motion in physics.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔬 Key Variables</h3>
+                    <ul class="variable-list">
+                        <li>
+                            <span class="variable-name">Length (L):</span> The distance from the pivot point to the center of mass of the bob. This is the most important factor affecting the period.
+                        </li>
+                        <li>
+                            <span class="variable-name">Period (T):</span> The time it takes for one complete swing (back and forth). Measured in seconds.
+                        </li>
+                        <li>
+                            <span class="variable-name">Frequency (f):</span> The number of complete swings per second. f = 1/T, measured in Hertz (Hz).
+                        </li>
+                        <li>
+                            <span class="variable-name">Amplitude:</span> The maximum angle the pendulum swings from its rest position.
+                        </li>
+                        <li>
+                            <span class="variable-name">Gravity (g):</span> The acceleration due to gravity (9.8 m/s² on Earth).
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <h3>⚡ The Physics Formula</h3>
+                    <div class="concept-box">
+                        <div class="equation-display">
+                            <div class="main-equation">
+                                $$T = 2\pi\sqrt{\frac{L}{g}}$$
+                            </div>
+                            <div class="equation-explanation">
+                                <p><strong>Where:</strong></p>
+                                <ul class="variable-list">
+                                    <li><strong>$T$</strong> = Period (time for one complete oscillation)</li>
+                                    <li><strong>$L$</strong> = Length of the pendulum</li>
+                                    <li><strong>$g$</strong> = Acceleration due to gravity (9.8 m/s²)</li>
+                                    <li><strong>$\pi$</strong> = Mathematical constant (≈ 3.14159)</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p>This formula shows that the period depends only on the length and gravity, NOT on the mass or amplitude (for small angles). This is why pendulums are so useful for timekeeping!</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h3>🔍 What You'll Observe</h3>
+                    <ul class="variable-list">
+                        <li><strong>Longer pendulum = Longer period:</strong> Double the length, and the period increases by √2 ≈ 1.41 times</li>
+                        <li><strong>Mass doesn't matter:</strong> A heavy bob and light bob of the same length have the same period</li>
+                        <li><strong>Small angles are key:</strong> The formula works best for angles less than 15°</li>
+                        <li><strong>Energy conservation:</strong> The pendulum converts potential energy to kinetic energy and back</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="real-life-apps">
+                        <h4>🌍 Modern Applications (2024)</h4>
+                        <ul>
+                            <li><strong>Smart Clocks:</strong> Modern timepieces still use pendulum principles for accuracy</li>
+                            <li><strong>Earthquake Detection:</strong> Advanced seismometers use pendulum technology for early warning systems</li>
+                            <li><strong>Music Technology:</strong> Digital metronomes and music apps use pendulum physics for rhythm</li>
+                            <li><strong>Museum Displays:</strong> Foucault pendulums in science centers demonstrate Earth's rotation</li>
+                            <li><strong>Civil Engineering:</strong> Bridge and building design incorporates pendulum damping systems</li>
+                            <li><strong>Space Technology:</strong> Satellite attitude control and space station stabilization</li>
+                            <li><strong>Virtual Reality:</strong> Motion tracking systems use pendulum-like physics for realistic movement</li>
+                            <li><strong>Gaming:</strong> Physics engines in video games simulate pendulum motion for realistic gameplay</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class PendulumSimulation {
+            constructor() {
+                this.canvas = document.getElementById('pendulumCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.animationId = null;
+                this.isRunning = false;
+                this.time = 0;
+                this.period = 0;
+                this.amplitude = 0;
+                this.lastPeakTime = 0;
+                this.peakCount = 0;
+                this.lastAngle = 0;
+                this.angleVelocity = 0;
+                
+                // Physics constants - realistic classroom values
+                this.damping = 0.002; // Very light damping (like a real classroom pendulum)
+                this.gravity = 9.8;
+                this.minAmplitude = 0.005; // Stop when amplitude is very small
+                
+                // Set canvas size properly
+                this.setupCanvas();
+                this.setupEventListeners();
+                this.drawPendulum();
+            }
+
+            setupCanvas() {
+                const rect = this.canvas.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            setupEventListeners() {
+                const lengthSlider = document.getElementById('lengthSlider');
+                const lengthValue = document.getElementById('lengthValue');
+                const angleSlider = document.getElementById('angleSlider');
+                const angleValue = document.getElementById('angleValue');
+
+                lengthSlider.addEventListener('input', (e) => {
+                    lengthValue.value = e.target.value;
+                    this.updatePendulum();
+                });
+
+                lengthValue.addEventListener('input', (e) => {
+                    lengthSlider.value = e.target.value;
+                    this.updatePendulum();
+                });
+
+                angleSlider.addEventListener('input', (e) => {
+                    angleValue.value = e.target.value;
+                    this.updatePendulum();
+                });
+
+                angleValue.addEventListener('input', (e) => {
+                    angleSlider.value = e.target.value;
+                    this.updatePendulum();
+                });
+            }
+
+            getLength() {
+                return parseFloat(document.getElementById('lengthSlider').value);
+            }
+
+            getInitialAngle() {
+                return parseFloat(document.getElementById('angleSlider').value) * Math.PI / 180;
+            }
+
+            calculatePeriod() {
+                const length = this.getLength();
+                return 2 * Math.PI * Math.sqrt(length / this.gravity);
+            }
+
+            updatePendulum() {
+                if (!this.isRunning) {
+                    this.drawPendulum();
+                }
+            }
+
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.time = 0;
+                this.period = this.calculatePeriod();
+                this.amplitude = this.getInitialAngle();
+                this.lastPeakTime = 0;
+                this.peakCount = 0;
+                this.lastAngle = this.amplitude;
+                this.angleVelocity = 0;
+                
+                this.animate();
+            }
+
+            stop() {
+                this.isRunning = false;
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+
+            reset() {
+                this.stop();
+                this.time = 0;
+                this.angleVelocity = 0;
+                this.drawPendulum();
+                this.updateDisplay();
+            }
+
+            animate() {
+                if (!this.isRunning) return;
+
+                const dt = 0.016; // Fixed time step for stability
+                this.time += dt;
+                
+                // Use proper physics integration
+                this.updatePhysics(dt);
+                this.drawPendulum();
+                this.updateDisplay();
+                this.detectPeaks();
+
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            updatePhysics(dt) {
+                const length = this.getLength();
+                const omega = Math.sqrt(this.gravity / length);
+                
+                // Apply damping to amplitude
+                this.amplitude *= (1 - this.damping);
+                
+                // Stop simulation if amplitude becomes too small
+                if (this.amplitude < this.minAmplitude) {
+                    this.stop();
+                    return;
+                }
+                
+                // Damped harmonic motion: θ = A * e^(-γt) * cos(ωt)
+                const gamma = this.damping;
+                const currentAngle = this.amplitude * Math.exp(-gamma * this.time) * Math.cos(omega * this.time);
+                this.angleVelocity = -this.amplitude * Math.exp(-gamma * this.time) * (gamma * Math.cos(omega * this.time) + omega * Math.sin(omega * this.time));
+                
+                this.lastAngle = currentAngle;
+            }
+
+            detectPeaks() {
+                const currentAngle = this.getCurrentAngle();
+                const threshold = 0.05; // Smaller threshold for better detection
+
+                // Detect when pendulum passes through equilibrium (angle ≈ 0)
+                if (Math.abs(currentAngle) < threshold && this.time - this.lastPeakTime > this.period * 0.2) {
+                    this.peakCount++;
+                    this.lastPeakTime = this.time;
+                    
+                    // Calculate period from multiple peaks for accuracy
+                    if (this.peakCount >= 3) {
+                        const measuredPeriod = this.time / this.peakCount;
+                        this.period = measuredPeriod;
+                    }
+                }
+            }
+
+            getCurrentAngle() {
+                if (!this.isRunning) {
+                    return this.getInitialAngle();
+                }
+                return this.lastAngle;
+            }
+
+            drawPendulum() {
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                // Clear canvas completely for each frame
+                this.ctx.clearRect(0, 0, width, height);
+                
+                const centerX = width / 2;
+                const centerY = 60;
+                const length = this.getLength() * 80; // Scale for display
+                const angle = this.getCurrentAngle();
+                
+                const bobX = centerX + length * Math.sin(angle);
+                const bobY = centerY + length * Math.cos(angle);
+                
+                // Draw pendulum rod with gradient
+                const gradient = this.ctx.createLinearGradient(centerX, centerY, bobX, bobY);
+                gradient.addColorStop(0, '#4CAF50');
+                gradient.addColorStop(1, '#2E7D32');
+                
+                this.ctx.strokeStyle = gradient;
+                this.ctx.lineWidth = 4;
+                this.ctx.lineCap = 'round';
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX, centerY);
+                this.ctx.lineTo(bobX, bobY);
+                this.ctx.stroke();
+                
+                // Draw pivot point with glow effect
+                this.ctx.shadowColor = '#fff';
+                this.ctx.shadowBlur = 10;
+                this.ctx.fillStyle = '#fff';
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, 6, 0, 2 * Math.PI);
+                this.ctx.fill();
+                this.ctx.shadowBlur = 0;
+                
+                // Draw bob as perfect circle with gradient
+                const bobGradient = this.ctx.createRadialGradient(bobX - 8, bobY - 8, 0, bobX, bobY, 15);
+                bobGradient.addColorStop(0, '#66BB6A');
+                bobGradient.addColorStop(1, '#2E7D32');
+                
+                this.ctx.fillStyle = bobGradient;
+                this.ctx.beginPath();
+                this.ctx.arc(bobX, bobY, 15, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Add highlight to bob
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                this.ctx.beginPath();
+                this.ctx.arc(bobX - 3, bobY - 3, 5, 0, 2 * Math.PI);
+                this.ctx.fill();
+                
+                // Draw angle indicator arc
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.arc(centerX, centerY, 35, -Math.PI/2, -Math.PI/2 + angle);
+                this.ctx.stroke();
+                
+                // Draw angle text
+                this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(`${(angle * 180 / Math.PI).toFixed(1)}°`, centerX, centerY - 50);
+            }
+
+            updateDisplay() {
+                const frequency = this.period > 0 ? 1 / this.period : 0;
+                const currentAngle = this.getCurrentAngle();
+                
+                document.getElementById('periodDisplay').textContent = this.period.toFixed(2) + 's';
+                document.getElementById('frequencyDisplay').textContent = frequency.toFixed(2) + ' Hz';
+                document.getElementById('amplitudeDisplay').textContent = (Math.abs(currentAngle) * 180 / Math.PI).toFixed(1) + '°';
+                document.getElementById('timeDisplay').textContent = this.time.toFixed(2) + 's';
+            }
+        }
+
+        // Initialize simulation
+        const pendulum = new PendulumSimulation();
+
+        // Global functions for buttons
+        function startPendulum() {
+            pendulum.start();
+        }
+
+        function stopPendulum() {
+            pendulum.stop();
+        }
+
+        function resetPendulum() {
+            pendulum.reset();
+        }
+    </script>
+</body>
+</html>
